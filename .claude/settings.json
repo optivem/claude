@@ -12,7 +12,8 @@
       "Agent(*)",
       "WebFetch(*)",
       "WebSearch(*)",
-      "Grep(**)"
+      "Grep(**)",
+      "Glob(**)"
     ]
   }
 }
