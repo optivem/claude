@@ -35,6 +35,13 @@
 - **Provide file paths when you know them.** "Edit line 42 of src/foo.ts" is cheaper than "find where we define foo and change it."
 - **Use slash commands.** `/commit` is cheaper than explaining what you want committed.
 
+## Priority 7 — Long-Running Scripts
+
+- **Token cost is proportional to output size, not execution time.** A script that runs for 5 minutes but prints one line costs almost nothing. A script that runs for 5 seconds but dumps 10,000 lines is expensive.
+- **Redirect verbose output to a file.** Use `> output.log 2>&1` and then read only the parts you need, rather than letting all output flow into context.
+- **Use `run_in_background` for long tasks.** Claude can continue other work while the script runs, and you only pay for tokens when the output is read later.
+- **Be aware of timeouts.** Default is 2 minutes, max is 10 minutes. Scripts that exceed the timeout are killed.
+
 ## Anti-Patterns to Avoid
 
 - Keeping one conversation open all day across unrelated tasks
