@@ -1,2 +1,1 @@
-# claude
-Claude Settings
+# Claude
