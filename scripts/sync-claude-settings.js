@@ -59,13 +59,16 @@ if (global.permissions?.defaultMode) {
   newProject.permissions.defaultMode = global.permissions.defaultMode;
 }
 
-// Build the repo settings to distribute (permissions only, no hooks/other personal config)
+// Build the repo settings to distribute (permissions + safe global flags, no hooks/other personal config)
 const repoSettings = {
   permissions: {
     allow: mergedAllow,
     defaultMode: newProject.permissions.defaultMode,
   },
 };
+if (global.skipDangerousModePermissionPrompt !== undefined) {
+  repoSettings.skipDangerousModePermissionPrompt = global.skipDangerousModePermissionPrompt;
+}
 
 // Sync global and claude repo
 const g = writeJsonIfChanged(GLOBAL_SETTINGS, newGlobal, global);
