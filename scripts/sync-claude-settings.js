@@ -2,14 +2,13 @@
 const fs = require("fs");
 const path = require("path");
 
-const GLOBAL_SETTINGS = path.join(
-  process.env.USERPROFILE || process.env.HOME,
-  ".claude",
-  "settings.json"
-);
+const HOME = process.env.USERPROFILE || process.env.HOME;
+const GLOBAL_SETTINGS = path.join(HOME, ".claude", "settings.json");
+const GLOBAL_COMMANDS_DIR = path.join(HOME, ".claude", "commands");
 const WORKSPACE_ROOT = path.join(__dirname, "..", "..");
 const WORKSPACE_FILE = path.join(WORKSPACE_ROOT, "academy.code-workspace");
 const PROJECT_SETTINGS = path.join(__dirname, "..", ".claude", "settings.json");
+const PROJECT_COMMANDS_DIR = path.join(__dirname, "..", ".claude", "commands");
 
 function readJson(filePath) {
   try {
@@ -95,8 +94,25 @@ for (const folder of folders) {
   }
 }
 
-if (g || p || repoCount > 0) {
-  console.log(`Settings synced (${repoCount} workspace repo(s) updated).`);
+// Sync skills from claude/.claude/commands/ to ~/.claude/commands/
+let skillCount = 0;
+if (fs.existsSync(PROJECT_COMMANDS_DIR)) {
+  fs.mkdirSync(GLOBAL_COMMANDS_DIR, { recursive: true });
+  for (const file of fs.readdirSync(PROJECT_COMMANDS_DIR)) {
+    const src = path.join(PROJECT_COMMANDS_DIR, file);
+    const dest = path.join(GLOBAL_COMMANDS_DIR, file);
+    const srcContent = fs.readFileSync(src, "utf-8");
+    const destContent = fs.existsSync(dest) ? fs.readFileSync(dest, "utf-8") : null;
+    if (srcContent !== destContent) {
+      fs.writeFileSync(dest, srcContent, "utf-8");
+      console.log(`  Updated skill: ${file}`);
+      skillCount++;
+    }
+  }
+}
+
+if (g || p || repoCount > 0 || skillCount > 0) {
+  console.log(`Settings synced (${repoCount} workspace repo(s), ${skillCount} skill(s) updated).`);
 } else {
   console.log("Settings already in sync.");
 }
