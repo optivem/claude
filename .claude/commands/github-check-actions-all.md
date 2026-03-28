@@ -6,4 +6,4 @@ Execute the following command and report the output:
 bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/check-actions-all.sh"
 ```
 
-Report which repos are passing, failing, or have no workflows. For any failures, show the workflow name and the commit that triggered the failure.
+Report which repos are passing, failing, or have no workflows. For any failures, show the workflow name, the commit that triggered the failure, and the error details.
