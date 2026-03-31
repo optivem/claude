@@ -33,6 +33,17 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);const f=j.tool_input?.file_path||j.tool_response?.filePath||'';if(f.includes('settings.json')){const root=require('child_process').execSync('git rev-parse --show-toplevel',{encoding:'utf8'}).trim();require('child_process').execSync('node '+root+'/scripts/sync-claude-settings.js',{stdio:'inherit'})}})\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
