@@ -57,8 +57,9 @@ newProject.permissions.allow = mergedAllow;
 if (global.permissions?.defaultMode) {
   newProject.permissions.defaultMode = global.permissions.defaultMode;
 }
-if (global.hooks) {
-  newProject.hooks = JSON.parse(JSON.stringify(global.hooks));
+// Project is source of truth for hooks — push project hooks to global
+if (project.hooks) {
+  newGlobal.hooks = JSON.parse(JSON.stringify(project.hooks));
 }
 
 // Build the repo settings to distribute
@@ -68,8 +69,8 @@ const repoSettings = {
     defaultMode: newProject.permissions.defaultMode,
   },
 };
-if (global.hooks) {
-  repoSettings.hooks = JSON.parse(JSON.stringify(global.hooks));
+if (project.hooks) {
+  repoSettings.hooks = JSON.parse(JSON.stringify(project.hooks));
 }
 if (global.skipDangerousModePermissionPrompt !== undefined) {
   repoSettings.skipDangerousModePermissionPrompt = global.skipDangerousModePermissionPrompt;
