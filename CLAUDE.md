@@ -16,3 +16,9 @@
 - Always use plain `git pull` (merge), never `git pull --rebase`. Rebase can silently drop commits on conflict — merge is safer.
 - Never commit, push, or sync repos with ad-hoc commands. Always use the `/commit` skill exclusively for these operations.
 - Be conservative with `gh` API calls to avoid rate limiting. When monitoring CI runs, sleep at least 2 minutes between status checks. Prefer single batch queries over multiple parallel `gh` calls.
+
+## Consistency Checks
+
+- When checking consistency across files (e.g. latest vs legacy configs), always enumerate concretely before judging. List every item/stage/type in each file, then compare side-by-side and flag anything present in one but missing from the other.
+- Never conclude "no changes needed" based on a quick read. Produce a structured comparison (table or list) that makes gaps self-evident before reaching any conclusion.
+- "Consistent" means structural parity: every feature/type/stage in one file must have an equivalent in the other, unless explicitly documented otherwise.
