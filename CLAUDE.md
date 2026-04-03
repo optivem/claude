@@ -4,6 +4,7 @@
 
 - Never use hardcoded local paths (e.g. `C:\Users\...`). Always resolve paths dynamically (e.g. `git rev-parse --show-toplevel`, `$HOME`, environment variables). The user works from different computers.
 - Never use `isolation: "worktree"` when spawning agents. Worktrees leave behind orphaned directories that block git operations. Always run agents in the default (non-isolated) mode.
+- When presenting options or asking for decisions, always mark one as **recommended** and explain why in one sentence. Minimize the number of choices the user needs to make — default to the recommended option and proceed unless the user objects.
 
 ## GitHub Issues
 
