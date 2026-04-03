@@ -5,6 +5,10 @@
 - Never use hardcoded local paths (e.g. `C:\Users\...`). Always resolve paths dynamically (e.g. `git rev-parse --show-toplevel`, `$HOME`, environment variables). The user works from different computers.
 - Never use `isolation: "worktree"` when spawning agents. Worktrees leave behind orphaned directories that block git operations. Always run agents in the default (non-isolated) mode.
 
+## GitHub Issues
+
+- When implementing a GitHub issue, after the work is done, tell the user it's complete and propose closing the ticket. Only close after the user approves.
+
 ## CLI Preferences
 
 - Always use `gh` CLI instead of `git` for GitHub/remote operations (pushing, pulling, cloning, creating repos, etc.).
