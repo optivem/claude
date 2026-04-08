@@ -17,6 +17,7 @@
 - Always use plain `git pull` (merge), never `git pull --rebase`. Rebase can silently drop commits on conflict — merge is safer.
 - Never commit, push, or sync repos with ad-hoc commands. Always use the `/commit` skill exclusively for these operations.
 - Be conservative with `gh` API calls to avoid rate limiting. When monitoring CI runs, sleep at least 2 minutes between status checks. Prefer single batch queries over multiple parallel `gh` calls.
+- Never use `gh api` to read file contents from external repositories (e.g. fetching individual files via the GitHub API). Instead, ask the user for permission to clone the repo locally into a temp directory, read files locally, then delete the clone when done. This is faster, avoids rate limiting, and allows using normal file tools.
 
 ## Consistency Checks
 
