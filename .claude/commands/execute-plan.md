@@ -2,7 +2,7 @@ Execute a plan file step by step, with approval gates before and after each step
 
 ## Input
 
-The plan file is provided as `$ARGUMENTS`. If no argument is given, ask the user which plan file to execute.
+The plan file is provided as `$ARGUMENTS`. If no argument is given, use the currently open file in the editor (from the IDE selection context). If no file is open either, ask the user which plan file to execute.
 
 The plan file path can be:
 - A filename in the current repo (e.g. `MIGRATION.md`)
@@ -42,7 +42,7 @@ For each incomplete step in the plan:
    ```bash
    bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo <repo-name> "<step description>"
    ```
-3. Mark the step as complete in the plan file (e.g. change `- [ ]` to `- [x]`, or add a completion note).
+3. **Mark the step as done in the plan file immediately after committing.** Use whatever format matches the plan (e.g. change `- [ ]` to `- [x]`, prefix with `~~strikethrough~~`, or append `— ✅ Done`). This is mandatory — never move to the next step without updating the plan file first.
 4. Report success, then move to the next step.
 
 ## Rules
