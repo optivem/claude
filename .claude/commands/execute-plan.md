@@ -56,22 +56,22 @@ For each incomplete step in the plan:
    ```bash
    bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo <repo-name> "<step description>"
    ```
-3. **Mark the step as done in the plan file immediately after committing.** Change `- [ ]` to `- [x]` (or equivalent format). This is mandatory — never move to the next step without updating the plan file first.
+3. **Delete the step from the plan file immediately after committing.** This is mandatory — never move to the next step without removing the completed step first.
 4. Report success, then move to the next step.
 
 ### Tracking decisions
 
 After each step is resolved (by any outcome), update the plan file to record what happened:
 
-| Outcome | How to mark | Example |
-|---------|-------------|---------|
-| Approved & committed | `- [x] Step N: ...` | Step done |
-| Skipped by user | `- [~] Step N: ... — ⏭️ Skipped` | User chose to skip |
-| Rejected / removed | `- [~] Step N: ... — ❌ Rejected: <reason>` | User decided this is not needed |
-| Modified | `- [x] Step N: ... — ✏️ Modified: <what changed>` | Approved with changes |
-| Deferred | `- [ ] Step N: ... — ⏳ Deferred: <reason>` | Left unchecked, with note |
+| Outcome | How to mark |
+|---------|-------------|
+| Approved & committed | **Delete the step** from the plan file |
+| Modified & committed | **Delete the step** |
+| Skipped | **Delete the step** |
+| Rejected | **Delete the step** — but if the rejection creates new work (e.g. "do the opposite"), add a new step for that work |
+| Deferred | `- [ ] Step N: ... — ⏳ Deferred: <reason>` |
 
-Always append the annotation on the same line as the step so the plan file is a complete record of decisions. The user should be able to open the plan file at any time and see exactly what was approved, rejected, modified, or deferred — and why.
+**Resolved steps are deleted** — the plan file should only show what's left to do. The git history is the record of what was done. Only deferred steps remain visible.
 
 ## Rules
 
