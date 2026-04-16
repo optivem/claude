@@ -6,6 +6,10 @@
 - Never use `isolation: "worktree"` when spawning agents. Worktrees leave behind orphaned directories that block git operations. Always run agents in the default (non-isolated) mode.
 - When presenting options or asking for decisions, always mark one as **recommended** and explain why in one sentence. Minimize the number of choices the user needs to make — default to the recommended option and proceed unless the user objects.
 
+## Code Comments
+
+- Never automatically convert TODO comments to NOTE or remove them. TODOs represent real work to be done — either implement the TODO or ask the user how to proceed.
+
 ## GitHub Issues
 
 - When implementing a GitHub issue, after the work is done, tell the user it's complete and propose closing the ticket. Only close after the user approves.
