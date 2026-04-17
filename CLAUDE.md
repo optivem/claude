@@ -23,6 +23,10 @@
 - Be conservative with `gh` API calls to avoid rate limiting. When monitoring CI runs, sleep at least 2 minutes between status checks. Prefer single batch queries over multiple parallel `gh` calls.
 - Never use `gh api` to read file contents from external repositories (e.g. fetching individual files via the GitHub API). Instead, ask the user for permission to clone the repo locally into a temp directory, read files locally, then delete the clone when done. This is faster, avoids rate limiting, and allows using normal file tools.
 
+## Review Reports
+
+- When processing review report files (any file under a `reviews/` directory), follow the rules in `courses/docs/rules/00-shared.md` → **Review Report Processing** section. Key rule: remove each finding from the report file as it is implemented, then delete the report file when empty, and delete the `reviews/` directory when empty.
+
 ## Consistency Checks
 
 - When checking consistency across files (e.g. latest vs legacy configs), always enumerate concretely before judging. List every item/stage/type in each file, then compare side-by-side and flag anything present in one but missing from the other.
