@@ -54,8 +54,8 @@ newGlobal.permissions.allow = mergedAllow;
 const newProject = JSON.parse(JSON.stringify(project));
 newProject.permissions = newProject.permissions || {};
 newProject.permissions.allow = mergedAllow;
-if (global.permissions?.defaultMode) {
-  newProject.permissions.defaultMode = global.permissions.defaultMode;
+if (project.permissions?.defaultMode) {
+  newGlobal.permissions.defaultMode = project.permissions.defaultMode;
 }
 // Project is source of truth for hooks — push project hooks to global
 if (project.hooks) {
