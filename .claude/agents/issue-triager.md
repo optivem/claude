@@ -18,7 +18,7 @@ The caller gives you a repo (e.g. `optivem/courses`) and optionally a subset of 
 
 3. **Compare against current repo state.** The relevant repos live under the workspace root (sibling dirs to the `claude` repo). Common ones:
    - `../courses/` — course content, lesson plans, rules
-   - `../starter/` — starter templates
+   - `../shop/` — shop templates
    - `../actions/`, `../github-utils/`, `../gh-optivem/` — tooling
    - `../sandbox/`, `../optivem-testing/` — test harnesses
 

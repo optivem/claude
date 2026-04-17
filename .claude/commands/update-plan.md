@@ -4,9 +4,9 @@ Steps:
 
 1. Review the conversation history for any corrections the user gave (e.g. "no not that", "actually do X instead", "don't do Y") and decisions that changed the approach.
 
-2. Read the current MIGRATION.md in the starter repo:
+2. Read the current MIGRATION.md in the shop repo:
 ```bash
-cat "$(git rev-parse --show-toplevel)/../starter/MIGRATION.md"
+cat "$(git rev-parse --show-toplevel)/../shop/MIGRATION.md"
 ```
 
 3. For each correction or decision found:
