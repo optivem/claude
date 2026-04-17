@@ -1,4 +1,4 @@
-Execute a plan file step by step, with approval gates before and after each step.
+Execute a plan file task by task, with approval gates before and after each task.
 
 ## Input
 
@@ -16,17 +16,17 @@ ACADEMY_ROOT="$(cd "$(git rev-parse --show-toplevel)/.." && pwd)"
 
 ## Plan format expectations
 
-The plan file contains numbered steps (e.g. `## Step 1:`, `### 1.`, `- [ ] Step 1`, or similar). Parse whatever numbering/format is used.
+The plan file contains numbered tasks (e.g. `## Task 1:`, `### 1.`, `- [ ] Task 1`, or similar). Parse whatever numbering/format is used.
 
 ## Execution modes
 
 The skill supports two modes:
 
 ### Mode 1: Review (default)
-Walk through each incomplete step one at a time, proposing and waiting for approval before executing. This is the default when the plan has no prior decisions recorded.
+Walk through each incomplete task one at a time, proposing and waiting for approval before executing. This is the default when the plan has no prior decisions recorded.
 
 ### Mode 2: Execute approved
-If the plan already contains tracked decisions (approved, rejected, skipped, etc. from a prior review pass), only execute steps that were explicitly approved — i.e. steps annotated with approval but not yet implemented (still `- [ ]` with no rejection/skip/defer marker). Skip everything else. This lets the user review the full plan first, mark decisions, then run `/execute-plan` again to carry out only what was approved.
+If the plan already contains tracked decisions (approved, rejected, skipped, etc. from a prior review pass), only execute tasks that were explicitly approved — i.e. tasks annotated with approval but not yet implemented (still `- [ ]` with no rejection/skip/defer marker). Skip everything else. This lets the user review the full plan first, mark decisions, then run `/execute-plan` again to carry out only what was approved.
 
 To detect which mode to use: scan the plan file for decision annotations (`⏭️ Skipped`, `❌ Rejected`, `✏️ Modified`, `⏳ Deferred`). If any are found, assume a prior review pass happened and switch to Mode 2. Otherwise use Mode 1.
 
@@ -34,18 +34,18 @@ To detect which mode to use: scan the plan file for decision annotations (`⏭�
 
 ## Execution loop (Mode 1: Review)
 
-For each incomplete step in the plan:
+For each incomplete task in the plan:
 
 ### Phase 1: Propose
-1. Read and display the step description to the user.
+1. Read and display the task description to the user.
 2. Analyze what needs to be done: which files to change, in which repo, and how.
 3. Present a concrete proposed solution (file changes, commands, etc.).
 4. Ask: **"Approve this approach? (yes / modify / skip)"**
-5. Wait for the user's response. If "modify", incorporate their feedback and re-propose. If "skip", move to the next step.
+5. Wait for the user's response. If "modify", incorporate their feedback and re-propose. If "skip", move to the next task.
 
 ### Phase 2: Execute
 1. Implement the approved changes.
-2. If the step involves code, run any relevant tests or validation to confirm correctness.
+2. If the task involves code, run any relevant tests or validation to confirm correctness.
 3. Show the user a summary of what was done (changed files, test results).
 4. Ask: **"Review complete. Approve and commit? (yes / redo / skip)"**
 5. Wait for the user's response. If "redo", ask what to change and re-execute. If "skip", leave changes uncommitted and move on.
@@ -54,29 +54,29 @@ For each incomplete step in the plan:
 1. Determine which repo the changes belong to (from the file paths modified).
 2. Commit only that repo using the commit script with `--repo`:
    ```bash
-   bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo <repo-name> "<step description>"
+   bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo <repo-name> "<task description>"
    ```
-3. **Delete the step from the plan file immediately after committing.** This is mandatory — never move to the next step without removing the completed step first.
-4. Report success, then move to the next step.
+3. **Delete the task from the plan file immediately after committing.** This is mandatory — never move to the next task without removing the completed task first.
+4. Report success, then move to the next task.
 
 ### Tracking decisions
 
-After each step is resolved (by any outcome), update the plan file to record what happened:
+After each task is resolved (by any outcome), update the plan file to record what happened:
 
 | Outcome | How to mark |
 |---------|-------------|
-| Approved & committed | **Delete the step** from the plan file |
-| Modified & committed | **Delete the step** |
-| Skipped | **Delete the step** |
-| Rejected | **Delete the step** — but if the rejection creates new work (e.g. "do the opposite"), add a new step for that work |
-| Deferred | `- [ ] Step N: ... — ⏳ Deferred: <reason>` |
+| Approved & committed | **Delete the task** from the plan file |
+| Modified & committed | **Delete the task** |
+| Skipped | **Delete the task** |
+| Rejected | **Delete the task** — but if the rejection creates new work (e.g. "do the opposite"), add a new task for that work |
+| Deferred | `- [ ] Task N: ... — ⏳ Deferred: <reason>` |
 
-**Resolved steps are deleted** — the plan file should only show what's left to do. The git history is the record of what was done. Only deferred steps remain visible.
+**Resolved tasks are deleted** — the plan file should only show what's left to do. The git history is the record of what was done. Only deferred tasks remain visible.
 
 ## Rules
 
 - Only commit the specific repo that was modified, never all repos.
 - Never skip the approval gates -- always wait for the user before executing and before committing.
-- If a step affects multiple repos, handle them one at a time with separate commit cycles.
+- If a task affects multiple repos, handle them one at a time with separate commit cycles.
 - If execution fails, stop and explain the error. Do not auto-fix; propose a solution and wait for approval.
-- After the last step, summarize what was completed and what was skipped.
+- After the last task, summarize what was completed and what was skipped.
