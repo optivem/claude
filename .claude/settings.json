@@ -2,6 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(gh api -X PATCH repos/optivem/actions/git/refs/tags/*)",
+      "Bash(gh api --method PATCH repos/optivem/actions/git/refs/tags/*)",
+      "Bash(git push origin v1 --force)",
       "Read(*)",
       "Edit(*)",
       "Write(*)",
