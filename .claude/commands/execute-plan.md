@@ -34,6 +34,22 @@ Three possible modes. **Before starting work, pick a mode**:
 
 ---
 
+## Mark plan as picked up
+
+Before starting execution in any mode (and after the mode is chosen), add a marker at the top of the plan file so anyone viewing the file can see an agent is working on it:
+
+> 🤖 **Picked up by agent** — `<hostname>` at `<ISO-8601 UTC timestamp>`
+
+Obtain the values with:
+- Hostname: `hostname`
+- Timestamp: `date -u +%Y-%m-%dT%H:%M:%SZ`
+
+Insert the marker as the first line of the file (or immediately after the H1 title, if one exists). If a previous marker is already present, replace it with the new one.
+
+Remove the marker when execution finishes — either the plan file is deleted (all items done) or only deferred items remain (delete just the marker line).
+
+---
+
 ## Pre-approved items
 
 Before any approval gate, check whether the item in the plan file already contains a clear author decision — for example, an inline author comment (`VJ:`, `AUTHOR:`, `APPROVED`, etc.) with an explicit instruction like "create a ticket", "add a TODO in X", "yes do it", "reject", "skip". If the decision is unambiguous and the required action is obvious from that decision, treat the item as pre-approved:
