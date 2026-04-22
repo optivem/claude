@@ -10,13 +10,16 @@ This runs:
 1. `sync-course-structure.mjs` → `config/courses/*.json` (modules + milestones)
 2. `sync-checklists.mjs` → `checklists/{courseId}/{NN}.md`
 3. `sync-issue-template.mjs` → `.github/ISSUE_TEMPLATE/review-request.yml`
-4. `generate-dashboard.mjs` → `docs/index.html`
+4. `sync-student-urls.mjs` → `config/courses/*.json` url fields (from `courses/generated/student-urls.json`, if present)
+5. `generate-dashboard.mjs` → `docs/index.html`
 
-Thinkific URL scraping is a separate manual step (requires Playwright + interactive login). Run it only when URLs need refreshing:
+Student-view URL *scraping* is a separate manual step owned by the courses repo — run it only when Thinkific lessons change:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/../courses/tools" && npx tsx sync-sandbox-urls.ts "../../sandbox"
+cd "$(git rev-parse --show-toplevel)/../courses/tools" && npx tsx scrape-student-urls.ts
 ```
+
+That writes `courses/generated/student-urls.json`, which `/sync-sandbox` then reads.
 
 After the sync:
 
@@ -25,6 +28,7 @@ After the sync:
    - Modules and milestones synced per course
    - Checklist files generated per course
    - Issue template: projects / courses / modules counts
+   - Student URLs: modules/milestones matched per course (or "skipped" if scrape JSON missing)
    - Dashboard regenerated (yes/no)
    - Unmatched milestones (empty URL fields)
 3. Ring the terminal bell when done:
