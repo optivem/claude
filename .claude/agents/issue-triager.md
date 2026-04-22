@@ -20,7 +20,7 @@ The caller gives you a repo (e.g. `optivem/courses`) and optionally a subset of 
    - `../courses/` — course content, lesson plans, rules
    - `../shop/` — shop templates
    - `../actions/`, `../github-utils/`, `../gh-optivem/` — tooling
-   - `../sandbox/`, `../optivem-testing/` — test harnesses
+   - `../hub/`, `../optivem-testing/` — test harnesses
 
    Use Glob/Grep/Read on the local copies. Do **not** use `gh api` to read files from external repos (per CLAUDE.md).
 
