@@ -19,12 +19,13 @@ Placed directly under the `## Actions` heading, before any per-action `###` sect
 ```
 | Action | Inputs | Outputs |
 |---|---|---|
-| <action-name> | `input1`, `input2`, ... | `output1`, `output2`, ... |
+| <action-name> | • `input1`<br>• `input2`<br>... | • `output1`<br>• `output2`<br>... |
 ```
 
 Rules:
 - Alphabetical by action directory name.
-- Input/output names only — no required/default/description. Names in backticks, comma-separated.
+- Input/output names only — no required/default/description. Names in backticks.
+- **One name per line** using `<br>` line breaks inside the cell, each name prefixed with `• ` (bullet + space).
 - If an action has no outputs, write `—` (em dash) in the Outputs column.
 - If an action has no inputs, write `—` in the Inputs column.
 
