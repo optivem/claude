@@ -1,9 +1,9 @@
-Run all sandbox sync scripts to regenerate data derived from the courses repo.
+Run all hub sync scripts to regenerate data derived from the courses repo.
 
-Execute the following from the sandbox repo root:
+Execute the following from the hub repo root:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/../sandbox" && node scripts/sync.mjs
+cd "$(git rev-parse --show-toplevel)/../hub" && node scripts/sync.mjs
 ```
 
 This runs:
@@ -20,11 +20,11 @@ Student-view URL *scraping* is a separate manual step owned by the courses repo 
 cd "$(git rev-parse --show-toplevel)/../courses/tools" && npx tsx scrape-student-urls.ts
 ```
 
-That writes `courses/generated/student-urls.json`, which `/sync-sandbox` then reads.
+That writes `courses/generated/student-urls.json`, which `/sync-hub` then reads.
 
 After the sync:
 
-1. Read `sandbox/config/courses/*.json` and flag any milestones with empty `url` fields.
+1. Read `hub/config/courses/*.json` and flag any milestones with empty `url` fields.
 2. Report a summary:
    - Modules and milestones synced per course
    - Checklist files generated per course
