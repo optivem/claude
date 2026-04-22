@@ -3,7 +3,7 @@ Run all sandbox sync scripts to regenerate data derived from the courses repo.
 Execute the following from the sandbox repo root:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/../sandbox" && GITHUB_TOKEN=$(gh auth token) GITHUB_OWNER=optivem GITHUB_REPO=sandbox node scripts/sync.mjs
+cd "$(git rev-parse --show-toplevel)/../sandbox" && node scripts/sync.mjs
 ```
 
 This runs:
@@ -11,7 +11,8 @@ This runs:
 2. `sync-checklists.mjs` → `checklists/{courseId}/{NN}.md`
 3. `sync-issue-template.mjs` → `.github/ISSUE_TEMPLATE/review-request.yml`
 4. `sync-student-urls.mjs` → `config/courses/*.json` url fields (from `courses/generated/student-urls.json`, if present)
-5. `generate-dashboard.mjs` → `docs/index.html`
+
+The dashboard (`docs/index.html`) is built and deployed in CI by `.github/workflows/dashboard.yml` — it is not regenerated locally.
 
 Student-view URL *scraping* is a separate manual step owned by the courses repo — run it only when Thinkific lessons change:
 
@@ -29,7 +30,6 @@ After the sync:
    - Checklist files generated per course
    - Issue template: projects / courses / modules counts
    - Student URLs: modules/milestones matched per course (or "skipped" if scrape JSON missing)
-   - Dashboard regenerated (yes/no)
    - Unmatched milestones (empty URL fields)
 3. Ring the terminal bell when done:
    ```
