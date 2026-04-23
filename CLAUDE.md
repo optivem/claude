@@ -6,6 +6,15 @@
 - Never use `isolation: "worktree"` when spawning agents. Worktrees leave behind orphaned directories that block git operations. Always run agents in the default (non-isolated) mode.
 - When presenting options or asking for decisions, always mark one as **recommended** and explain why in one sentence. Minimize the number of choices the user needs to make — default to the recommended option and proceed unless the user objects.
 
+## Token Usage
+
+**Minimize token usage is a top-level guiding principle.** Every task has the question: is the cheaper tool good enough?
+
+- Prefer surgical `Edit` / `Write` over spawning an agent when the change is small and localized (1-2 files, no cross-references to update, no broad scan needed). Agents cost 10–50x more tokens than direct edits.
+- Reserve agents for work that genuinely needs their scope: structural changes (add/remove/rename), cross-file cross-references, broad codebase exploration, multi-step investigations.
+- **Example (README regeneration):** the `actions-readme-updater` agent costs ~60–100k tokens per run because it reads all ~40 `action.yml` files. For an input-only change to a single action, a surgical `Edit` (~2–5k tokens) is ~20x cheaper and just as safe. Invoke the agent only when an action is added, removed, or renamed.
+- If an agent run reports high token usage for a small change, reconsider whether the agent was the right tool. Prefer to document the cheaper path going forward.
+
 ## Code Comments
 
 - Never automatically convert TODO comments to NOTE or remove them. TODOs represent real work to be done — either implement the TODO or ask the user how to proceed.
