@@ -41,3 +41,8 @@
 - When checking consistency across files (e.g. latest vs legacy configs), always enumerate concretely before judging. List every item/stage/type in each file, then compare side-by-side and flag anything present in one but missing from the other.
 - Never conclude "no changes needed" based on a quick read. Produce a structured comparison (table or list) that makes gaps self-evident before reaching any conclusion.
 - "Consistent" means structural parity: every feature/type/stage in one file must have an equivalent in the other, unless explicitly documented otherwise.
+
+## GitHub Actions — "check" actions must never fail hard
+
+- Never configure `check-*` actions (e.g. `check-ghcr-packages-exist`, `check-tag-exists`) with `fail-on-error: 'true'`. These actions are probes — their job is to report status via outputs (`exist`, `exists`, `results`) so a downstream verification step can decide what to do. Setting `fail-on-error: 'true'` turns transient auth/HTTP errors into hard workflow failures, which is the wrong place for the decision.
+- If a workflow must fail when something is (or isn't) present, read the probe's output in a follow-up step and fail there with a clear, specific message. The probe stays soft.
