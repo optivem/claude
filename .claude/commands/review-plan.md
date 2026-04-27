@@ -6,7 +6,7 @@ The plan file is provided as `$ARGUMENTS`. If no argument is given, use the curr
 
 The plan file path can be:
 - A filename in the current repo (e.g. `MIGRATION.md`)
-- A relative path from the academy workspace root (e.g. `actions/.plans/20260420-foo.md`)
+- A relative path from the academy workspace root (e.g. `actions/plans/20260420-foo.md`)
 - An absolute path
 
 Resolve the academy workspace root dynamically:
