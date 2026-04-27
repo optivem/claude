@@ -42,7 +42,15 @@
 - Never conclude "no changes needed" based on a quick read. Produce a structured comparison (table or list) that makes gaps self-evident before reaching any conclusion.
 - "Consistent" means structural parity: every feature/type/stage in one file must have an equivalent in the other, unless explicitly documented otherwise.
 
-## GitHub Actions — "check" actions must never fail hard
+## GitHub Actions — `check-*` actions must NOT swallow errors
 
-- Never configure `check-*` actions (e.g. `check-ghcr-packages-exist`, `check-tag-exists`) with `fail-on-error: 'true'`. These actions are probes — their job is to report status via outputs (`exist`, `exists`, `results`) so a downstream verification step can decide what to do. Setting `fail-on-error: 'true'` turns transient auth/HTTP errors into hard workflow failures, which is the wrong place for the decision.
-- If a workflow must fail when something is (or isn't) present, read the probe's output in a follow-up step and fail there with a clear, specific message. The probe stays soft.
+A probe's boolean output (`exist`, `exists`, `results[i].exists`, etc.) must reflect a definitive answer to the question the action name asks:
+
+- `true` when the resource demonstrably exists (e.g. HTTP 200, tag matches).
+- `false` when the resource demonstrably does not exist (e.g. HTTP 404, clean response with no match).
+
+Anything else — auth failure (401/403), unexpected HTTP code, registry 5xx after retries, network failure, malformed response, token-exchange failure — is **not** a definitive answer. The probe MUST fail hard (`echo "::error::..." ; exit 1`) with a specific, actionable message naming the resource and the likely fix. Returning `false` on an indeterminate result is a lie: it hides the real cause and turns workflow misconfigurations into silent green skips.
+
+Why: a caller asking "does X exist?" and getting `false` should be able to trust that answer means "X is absent" — not "we couldn't tell." Conflating the two masks misconfiguration as legitimate skip and propagates failure downstream (e.g. a 403 from GHCR coerced to `exists=false` silently skips the acceptance stage; QA then fails looking for an RC tag that was never published).
+
+`fail-on-error` inputs on `check-*` actions are vestigial under this rule (the always-loud behavior is mandatory) and should be removed when the action is next touched.
