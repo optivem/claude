@@ -85,7 +85,26 @@ Otherwise **proceed without asking** (per auto-commit / recommend-and-proceed co
 3. MAJOR → MINOR → INFO
 4. Within a severity, group by file to minimize back-and-forth edits on the same file.
 
-### Phase 4: Fix issues one by one
+### Phase 4 (preferred): Delegate each SonarCloud project to its own subagent
+
+When the repo has multiple SonarCloud project keys, do **not** fix all issues in the main conversation — that bloats context with file reads from every project. Instead, spawn one subagent per project key, each scoped to a single SonarCloud project. The main thread:
+
+1. Writes the fetched issues for each project to `<repo>/.tmp/sonar/<projectKey>.json` (already done in Phase 2).
+2. Launches a subagent per project (in parallel where independent) with a self-contained prompt that includes:
+   - The project key and the path to its issues JSON.
+   - The repo-relative source root (e.g. `system/monolith/java`, `system-test/typescript`).
+   - The skip list (e.g. rules already deemed intentional like `typescript:S7739` for the BDD `.then` DSL — pass these in explicitly so the subagent doesn't re-investigate).
+   - The deferred-plan path: `<repo>/plans/sonar-deferred.md` — append, do not overwrite.
+   - Instructions to fix, run the local build/typecheck for that project once, and **commit** for that project (using the per-project commit pattern in Phase 5). Subagents commit on their own — do not collect changes back to main.
+3. Each subagent returns a short structured summary (fixed count, deferred count, commit SHA) — the main thread aggregates these into the final report.
+
+Subagent prompts should be self-contained: include the rule's expected fix where it's a known mechanical pattern (e.g. "`new Error(...)` → `new TypeError(...)` for S7786", "return type `: ClassName` → `: this` for S6565 on fluent builder methods that `return this`"), so the subagent doesn't need to re-fetch rule descriptions.
+
+Use the **general-purpose** agent type with full tool access. Do not use worktree isolation (per CLAUDE.md).
+
+If the repo has only **one** SonarCloud project key, skip subagent delegation and inline the work — Phase 4 (inline) below applies.
+
+### Phase 4 (inline, single-project fallback): Fix issues one by one
 
 For each issue:
 
@@ -98,15 +117,41 @@ For each issue:
    Cache rule descriptions in-memory across the run — don't re-fetch for repeated rules.
 3. **Apply the fix** with Edit (or Write for new files, e.g. missing `equals`/`hashCode` helper).
 4. **Verify locally.** If the repo has a build target that compiles the changed language, run it once per batch (group fixes per-file, then run build after the batch on that file). Do not run a full build after every single issue.
-5. **Stop on problems.** If a fix is ambiguous, affects public API, or the build fails after your change, **stop** — do not auto-fix or escalate. Report: "Issue <key> (<rule>) at <file>:<line> — <short reason for stopping>. Proposed options: ... Waiting for input."
+5. **Defer blockers — do not stop the whole run.** If a fix is ambiguous, affects public API, or the build fails after your change, do **not** halt the run waiting for input. Instead, append the issue to a plan file at `<repo>/plans/sonar-deferred-<YYYY-MM-DD-HHMM>.md` (UTC timestamp **in the filename itself**, e.g. `plans/sonar-deferred-2026-04-27-1056.md`) and continue with the remaining issues. Mention the deferred file at the end in the final report.
+
+   Get the timestamp with `date -u +"%Y-%m-%d-%H%M"` so it's reproducible. Each `/fix-sonar-warnings` run gets its own dated file — never overwrite a prior run's deferred file. Inside the file, also include a `**Run started:** YYYY-MM-DD HH:MM UTC` header for human readability. Each issue gets its own section with: rule, file:line, message, what was tried, the open question / decision needed.
 6. **Do not mark the issue as resolved via the API.** SonarCloud will auto-resolve issues on the next analysis run after the commit stage executes.
 
 ### Phase 5: Commit
 
+**Before committing anything, run compilation / typecheck on EVERY project in the repo — not just the ones you touched.** This is mandatory. A SonarCloud fix in one project (e.g. a shared library or interface) can break a sibling project that depends on it. The user explicitly wants every project verified before a single commit lands.
+
+**Preferred: use the repo's `compile-all.sh` script** (or equivalent if the repo has a different name for it — check the repo root). It walks every system + system-test project and runs the language-appropriate compile/typecheck:
+- `./compile-all.sh` from the repo root
+- exits non-zero if any project fails
+
+If `compile-all.sh` doesn't exist, fall back to per-language commands (run in parallel where independent):
+- Java: `./gradlew compileJava --no-daemon -q` (or `mvn compile -q`)
+- TypeScript: `npx tsc --noEmit` (or `npm run type-check` / `npm run lint` if defined)
+- .NET: `dotnet build --nologo -v q`
+
+If a project fails to compile, **do not commit anything**. Investigate the failure — most often it's an over-broad `replace_all` that hit a pattern in addition to the intended targets (e.g. a SonarCloud rule asked to change a return type on a fluent method, but `replace_all` of `: ClassName {` also caught a factory method that genuinely returns a different class). Fix the root cause, re-run `compile-all.sh`, and only then commit.
+
 When all fixes for the repo are staged and verified:
 
-1. Group changes logically. If fixes touched >1 file and cover multiple rules, a single commit with a message like `fix: resolve N SonarCloud issues (java:S1192×12, java:S125×8)` is fine.
-2. Commit via the commit script (per CLAUDE.md — never ad-hoc):
+1. **One combined commit per repo, not per SonarCloud project.** Even when the repo publishes to multiple SonarCloud project keys (e.g. monolith-java, monolith-typescript, multitier-backend-java, etc.), make a single commit covering all the fixes for the whole run. The commit message must enumerate every SonarCloud project key touched and a per-project rule breakdown so traceability is preserved without splitting commits.
+   - Example commit message:
+     ```
+     fix: resolve N SonarCloud issues across M projects
+
+     - optivem_shop-monolith-java (12): java:S106×3, java:S112×2, java:S2142×1
+     - optivem_shop-monolith-typescript (5): typescript:S7721×3, typescript:S7735×1, typescript:S4325×1
+     - optivem_shop-tests-typescript (80): typescript:S6565×42, typescript:S2933×13, ...
+     ```
+   - **Do not use ad-hoc `git add` / `git commit`** (per CLAUDE.md, the commit script is mandatory for all commit/push operations).
+   - The `commit.sh --paths` flag exists for other use cases but should NOT be used to split one SonarCloud run into multiple commits — the user prefers one commit for the whole run.
+2. **Auto-commit — do not block on the user.** Per the global `feedback_auto_commit` rule, run the commit script without asking. The only things that wait for the user are items written to `<repo>/plans/sonar-deferred.md` (see Phase 4 step 5).
+3. Commit via the commit script (per CLAUDE.md — never ad-hoc). To scope a commit to specific paths, pass the paths to the script:
    ```bash
    bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo <repo-name> "<summary>"
    ```
