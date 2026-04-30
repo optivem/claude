@@ -18,17 +18,46 @@ ACADEMY_ROOT="$(cd "$(git rev-parse --show-toplevel)/.." && pwd)"
 
 The plan file contains numbered items (e.g. `## Step 1:`, `### 1.`, `- [ ] Step 1`, or similar). Parse whatever numbering/format is used.
 
+## Token-efficient advice (always surface)
+
+Before picking a mode, **always advise the user which option is most token-efficient for this specific plan and situation**, and recommend one. Don't just list the options — make a recommendation with one sentence of why.
+
+The dimensions to consider:
+
+- **Mode.** Batch-then-review is almost always cheaper than step-by-step: each per-item gate replays the prefix from the start of the conversation, so 10 gates = 10× the cached-prefix replay. Recommend step-by-step only when items are genuinely high-risk or high-ambiguity (the user's judgment is needed mid-flow, not just at the end).
+- **Scope.** If the plan is large, recommend executing only one natural seam this session and finishing the rest in a fresh `/clear`-ed session. Cached prefixes grow with every read/edit; splitting on natural seams (engine → integration → driver → docs, or one repo at a time) keeps each session's prefix small. Look for explicit chunking guidance inside the plan first — many plans pre-declare "execute in N separate sessions"; respect that.
+- **Parallelization.** When items are independent (e.g. "edit 9 different files, no cross-cutting changes"), recommend dispatching subagents in parallel rather than doing them sequentially in the main session. Subagent context is isolated from the main conversation, so the main session stays small while the work fans out.
+- **Re-read budget.** Read each file once; use `Edit` afterward instead of re-reading. If the plan demands repeatedly re-checking the same large file, flag that as a token cost and propose either splitting the work or having a subagent own that file.
+
+Phrasing template: *"Most token-efficient = batch-then-review, scoped to <seam>, with <N> parallel subagents. Sound good?"* The user can accept, ask for an alternative, or override.
+
+## Hand-off at end of session (always surface)
+
+Before exiting **any** session — whether all items finished, a stop-gate was hit, or you scoped to a subset — surface an explicit hand-off block to the user if any unresolved items remain in the plan:
+
+```
+Next session:
+1. /clear
+2. /execute-plan <relative-path-to-plan>
+```
+
+If the plan declares its own chunk ordering, name the next chunk explicitly: *"Next session is the `<name>` chunk; type `/clear` then `/execute-plan plans/foo.md` and I'll resume there."* Always include the literal slash-commands the user needs to type — don't make them remember.
+
+If only deferred items remain, say so plainly and skip the hand-off block: deferred items are a backlog signal, not a next-session signal.
+
+The hand-off block goes at the very end of the final response, after the per-repo commit summary.
+
 ## Execution modes
 
-Three possible modes. **Before starting work, pick a mode**:
+Three possible modes. **Before starting work, pick a mode** (after surfacing the token-efficient advice above):
 
 1. **Auto-detect "Execute approved" first.** Scan the plan for decision annotations (`⏭️ Skipped`, `❌ Rejected`, `✏️ Modified`, `⏳ Deferred`). If any exist, assume a prior review pass happened and switch to **Mode: Execute approved** (see below). Do not ask the user in this case.
 
-2. **Otherwise, ask the user which mode:**
+2. **Otherwise, ask the user which mode** — but lead with the recommendation, not a neutral menu:
 
-   > Run this plan **step-by-step** (approve each item before and after) or **batch-then-review** (I execute all items, then present everything for review, and commit on your approval)?
+   > For this plan, batch-then-review is most token-efficient because <one-sentence reason>. Sound good, or do you want step-by-step?
 
-   Accept short answers: "step", "step-by-step", "one by one" → **Step-by-step**. "batch", "all", "everything", "batch-then-review" → **Batch-then-review**. If the user has already indicated a preference in their invocation message (e.g. "execute everything and ask me to review at the end"), treat that as the answer and don't re-ask.
+   Accept short answers: "step", "step-by-step", "one by one" → **Step-by-step**. "batch", "all", "everything", "batch-then-review", "yes", "sounds good" → **Batch-then-review**. If the user has already indicated a preference in their invocation message (e.g. "execute everything and ask me to review at the end", "whatever is most token efficient"), treat that as the answer and don't re-ask.
 
 3. Respect **pre-approved items** in either mode (see below).
 
