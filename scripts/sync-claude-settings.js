@@ -6,7 +6,7 @@ const HOME = process.env.USERPROFILE || process.env.HOME;
 const GLOBAL_SETTINGS = path.join(HOME, ".claude", "settings.json");
 const GLOBAL_COMMANDS_DIR = path.join(HOME, ".claude", "commands");
 const WORKSPACE_ROOT = path.join(__dirname, "..", "..");
-const WORKSPACE_FILE = path.join(WORKSPACE_ROOT, "academy-workspace.code-workspace");
+const WORKSPACE_FILE = path.join(WORKSPACE_ROOT, "academy.code-workspace");
 const PROJECT_SETTINGS = path.join(__dirname, "..", ".claude", "settings.json");
 const PROJECT_COMMANDS_DIR = path.join(__dirname, "..", ".claude", "commands");
 
