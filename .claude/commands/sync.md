@@ -1,9 +1,9 @@
-Run the sync script to pull and push all repos in the academy workspace (no commit).
+Run `gh optivem workspace sync` to pull and push all repos in the academy workspace (no commit).
 
 Execute the following command and report the output:
 
 ```bash
-bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/sync.sh"
+gh optivem workspace sync
 ```
 
 Report how many repos were synced and how many were skipped.

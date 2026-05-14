@@ -1,15 +1,16 @@
-Run the commit script to commit, pull, and push repos in the academy workspace.
+Run `gh optivem workspace commit` to commit, pull, and push repos in the academy workspace.
 
 Execute the following command and report the output:
 
 ```bash
-bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" $ARGUMENTS
+gh optivem workspace commit --yes $ARGUMENTS
 ```
 
 `$ARGUMENTS` supports:
-- No arguments: commits all repos with default message "Sync changes"
-- `"message"`: commits all repos with a custom message
-- `--repo <name>`: commits only the named repo with default message
-- `--repo <name> "message"`: commits only the named repo with a custom message
+- `"message"`: commits all dirty repos with the given message
+- `--repo <name> "message"`: commits only the named repo with the given message
+- `--repo <name> --paths "<paths>" "message"`: stages only specific paths under the named repo
+
+A commit message is required when any iterated repo has dirty changes. Add `--include-untracked` to also stage untracked files (otherwise the command refuses them under `--yes`).
 
 Report which repos were committed, how many were synced, and how many were skipped.
