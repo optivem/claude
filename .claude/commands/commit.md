@@ -1,9 +1,9 @@
-Run `gh optivem workspace commit` to commit, pull, and push repos in the academy workspace.
+Run `gh optivem commit` to commit, pull, and push repos in the academy workspace.
 
 Execute the following command and report the output:
 
 ```bash
-gh optivem workspace commit --yes $ARGUMENTS
+gh optivem commit --yes $ARGUMENTS
 ```
 
 `$ARGUMENTS` supports:
