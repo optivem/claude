@@ -6,6 +6,7 @@ Walk a plan file item by item, discuss each item with the user, and update the p
 - `/review-plan` — you want to check the plan against the **current code state** and prune items that are done/obsolete. No discussion per item.
 - `/execute-plan` — you want to **implement** the plan. Code changes + commits.
 - `/update-plan` — batch sync the plan with decisions already made earlier in *this* conversation. No per-item walk.
+- `/explain-plan` — you want a **fast, high-level read** of the plan's *why* and *end result*. No discussion, no edits to items.
 
 If the user invoked `/refine-plan` but the request sounds more like one of the others, point that out before starting.
 

@@ -79,6 +79,24 @@ Remove the marker when execution finishes — either the plan file is deleted (a
 
 ---
 
+## Ensure the TL;DR block
+
+After marking pickup, check whether the plan has a `## TL;DR` block near the top:
+
+```
+## TL;DR
+
+**Why:** <1–3 sentences — the problem/motivation: what's missing or broken today and who feels it.>
+**End result:** <1–3 sentences — what is true once the plan is fully executed: the observable end state.>
+```
+
+- **If it already exists, leave it untouched.** Do not re-derive it each run — that wastes tokens and risks drifting from the author's wording.
+- **If it's missing,** synthesize one from the plan body (primarily its `## Problem` / `## Goal` sections) and insert it immediately after the H1 title and the pickup marker line, before the first detailed section. Keep it to the two-line shape above — a high-level digest, not a restatement of the plan.
+
+This is the same block `/explain-plan` reads, so populating it here means a later `/explain-plan` is a pure read. The insertion rides along with the plan-file edits you commit during execution; no separate commit step is needed.
+
+---
+
 ## Pre-approved items
 
 Before any approval gate, check whether the item in the plan file already contains a clear author decision — for example, an inline author comment (`VJ:`, `AUTHOR:`, `APPROVED`, etc.) with an explicit instruction like "create a ticket", "add a TODO in X", "yes do it", "reject", "skip". If the decision is unambiguous and the required action is obvious from that decision, treat the item as pre-approved:
