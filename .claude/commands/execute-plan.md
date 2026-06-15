@@ -18,6 +18,16 @@ ACADEMY_ROOT="$(cd "$(git rev-parse --show-toplevel)/.." && pwd)"
 
 The plan file contains numbered items (e.g. `## Step 1:`, `### 1.`, `- [ ] Step 1`, or similar). Parse whatever numbering/format is used.
 
+## Pre-flight: resolve open questions (gate — do this first)
+
+**Before anything else — before advising on mode, marking pickup, or touching code — scan the plan for unresolved open questions and decisions.** Look for an `## Open questions` section, inline `TBD` / `TODO(decide)` / `???` / "needs user decision" markers, and any step whose action is conditional on a choice that hasn't been made.
+
+- **If unresolved questions remain**, stop and present them to the user as a numbered list, with your recommendation for each, and ask them to resolve before you start. Do **not** begin execution against an under-specified plan — a guessed decision mid-execution is the most expensive kind of rework.
+- **If the section explicitly says they're all resolved** (e.g. "Open questions: none — all resolved before execution"), proceed.
+- **If there is no Open questions section at all**, do a quick judgment pass for hidden ambiguity; if the plan reads as fully specified, proceed.
+
+This gate exists because plans are often drafted in one session and executed in another — the executor must confirm every decision the author left open is actually closed, not silently pick one.
+
 ## Token-efficient advice (always surface)
 
 Before picking a mode, **always advise the user which option is most token-efficient for this specific plan and situation**, and recommend one. Don't just list the options — make a recommendation with one sentence of why.
@@ -197,6 +207,7 @@ Deletions happen **as soon as each item's work is done**, in both modes — Step
 
 ## Rules
 
+- **Resolve open questions before starting** — run the pre-flight gate above; never begin execution while the plan has unresolved questions/decisions. Surface them with recommendations and wait for the user.
 - Only commit the specific repo that was modified, never all repos. (Batch mode may still commit multiple repos — one commit per repo with changes, still using `--repo` each time.)
 - Never bypass a gate a user would reasonably want: explicit "stop and ask user" markers in the plan, destructive operations (release deletion, force-push, dropping data), or actions visible to third parties (published releases, GitHub comments).
 - If a item affects multiple repos, handle each repo with its own commit.
