@@ -2,7 +2,7 @@ Turn a rough idea into a new plan file, then discuss it with the user and refine
 
 ## When to use which plan command
 
-- `/create-plan` (this one) — you have an **idea but no plan file yet**. Creates the file from scratch, then iterates with you. Outputs a new `courses/plans/*.md`.
+- `/create-plan` (this one) — you have an **idea but no plan file yet**. Creates the file from scratch, then iterates with you. Outputs a new `plans/*.md` in the **current repo** (the repo of the working directory this chat is in).
 - `/refine-plan` — a plan file **already exists**; walk it item by item and rewrite based on discussion.
 - `/review-plan` — check an existing plan against the **current code state** and prune done/obsolete items.
 - `/execute-plan` — **implement** an existing plan (code changes + commits).
@@ -17,13 +17,14 @@ The idea is provided as `$ARGUMENTS` (free-form: a sentence, a paragraph, a brai
 
 ## Where the plan is saved
 
-Plans live in the centralized `courses/plans/` directory, named `YYYYMMDD-HHMMSS-<slug>.md`.
+Plans live in the **current repo's own `plans/` directory** — the repo of the working directory this chat is in, *not* a hardcoded central repo. A plan about a repo's code belongs with that code, so it travels with the repo and is found by anyone working there. Named `YYYYMMDD-HHMM-<slug>.md` (match the repo's existing plan-naming convention if its `plans/` already uses a different shape).
 
 Resolve the path and timestamp dynamically (never hardcode):
 ```bash
-ACADEMY_ROOT="$(cd "$(git rev-parse --show-toplevel)/.." && pwd)"
-PLANS_DIR="$ACADEMY_ROOT/courses/plans"
-TS="$(date -u +%Y%m%d-%H%M%S)"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PLANS_DIR="$REPO_ROOT/plans"
+mkdir -p "$PLANS_DIR"   # plans/ may not exist yet in this repo
+TS="$(date -u +%Y%m%d-%H%M)"
 ```
 
 Derive `<slug>` from the idea: 3–6 kebab-case words capturing the topic (e.g. `add-dark-mode-toggle`). Don't ask the user to approve the filename — derive it, state it, and move on. The user can rename later.
@@ -92,11 +93,12 @@ Keep iterating until the user signals the plan is good ("looks right", "that's i
 
 When the user signals the plan is ready, **do not commit automatically.** Ask:
 
-> Plan ready. Commit `<filename>` to the `courses` repo? (yes / not yet)
+> Plan ready. Commit `<filename>` to the `<current repo>` repo? (yes / not yet)
 
-- **yes** → commit only the plan file's repo (`courses`), mirroring `/execute-plan`'s scoped commit:
+- **yes** → commit only the current repo (the one the plan file lives in), mirroring `/execute-plan`'s scoped commit:
   ```bash
-  bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo courses "Add plan: <human-readable title>"
+  REPO="$(basename "$(git rev-parse --show-toplevel)")"
+  bash "$(git rev-parse --show-toplevel)/../github-utils/scripts/commit.sh" --repo "$REPO" "Add plan: <human-readable title>"
   ```
 - **not yet** → leave the file uncommitted and stop. Mention the user can run `/commit` later, or resume refining.
 
@@ -108,6 +110,7 @@ When the user signals the plan is ready, **do not commit automatically.** Ask:
 - **`## ▶ Next executable step (resume here)` block is mandatory.** Every plan carries it so it can be resumed with bare `/clear` + `/execute-plan <file>`. Ground it enough to act on without re-derivation; for a trivial linear plan it may just mirror Step 1.
 - **Write the skeleton once, then `Edit`.** One `Write` to create the file; every later change is a targeted `Edit`. Never re-`Write` the whole file to make a small change.
 - **Write through settled chunks; don't batch-to-the-end.** Apply each firm decision as an `Edit` when it settles — so an interruption can't lose work — but don't thrash the file on still-fluid discussion.
-- **Don't commit without confirmation.** Phase 3 is an explicit gate. Scope the commit to the `courses` repo only.
-- **Dynamic paths only.** Resolve the academy root and timestamp at runtime; never hardcode a local path or date.
+- **Don't commit without confirmation.** Phase 3 is an explicit gate. Scope the commit to the current repo only (the one the plan file lives in).
+- **Current repo, not a central one.** Save the plan in the current repo's `plans/` dir (`$(git rev-parse --show-toplevel)/plans`), never a hardcoded `courses/plans`. The plan lives with the code it concerns.
+- **Dynamic paths only.** Resolve the repo root and timestamp at runtime; never hardcode a local path or date.
 - **One plan per invocation.** If the user has several ideas, run the command once per idea.
