@@ -107,6 +107,19 @@ This is the same block `/explain-plan` reads, so populating it here means a late
 
 ---
 
+## Keep the ▶ Next executable step block current (resume contract)
+
+Every plan should carry a `## ▶ Next executable step (resume here)` block so the user can re-enter it with bare `/clear` + `/execute-plan <file>` — no custom prompt. This block always names the **single** next concrete, executable unit, grounded enough to act on without re-deriving it.
+
+- **If the block is missing,** synthesize one from the next incomplete item (its files/commands, the gate, what it unblocks) and insert it after `## Outcomes` (or after TL;DR if there are no Outcomes). Don't skip this because the plan "looks obvious" — the block is what spares the *next* session the reasoning you just did.
+- **Keep it current as you go.** Whenever a unit completes and you remove its item, **replace the block's body with the new next unit** in the same edit. The block must never describe already-done work.
+- **When only design/planning remains** (the next move is to draft or refine a child plan, not make a mechanical edit), rewrite the block to say so explicitly and name the plan to draft/refine — so the next executor switches to `/create-plan` or `/refine-plan` instead of hunting for edits. This is exactly the case that otherwise forces a confused back-and-forth on resume.
+- **When the plan is fully done** (file about to be deleted), the block goes with it. If only deferred items remain, point the block at them or note that the rest is deferred.
+
+The block's edits ride along with the plan-file changes you already commit during execution — no separate commit step.
+
+---
+
 ## Pre-approved items
 
 Before any approval gate, check whether the item in the plan file already contains a clear author decision — for example, an inline author comment (`VJ:`, `AUTHOR:`, `APPROVED`, etc.) with an explicit instruction like "create a ticket", "add a TODO in X", "yes do it", "reject", "skip". If the decision is unambiguous and the required action is obvious from that decision, treat the item as pre-approved:
@@ -205,9 +218,12 @@ After each item is resolved (by any outcome), update the plan file to record wha
 
 Deletions happen **as soon as each item's work is done**, in both modes — Step-by-step deletes after each item's commit; Batch-then-review deletes during Phase 1, before the final commit gate.
 
+**Whenever you delete a resolved item, update the `## ▶ Next executable step (resume here)` block** to name the new next unit (see "Keep the ▶ Next executable step block current" above) — in the same edit, so the plan is always resumable.
+
 ## Rules
 
 - **Resolve open questions before starting** — run the pre-flight gate above; never begin execution while the plan has unresolved questions/decisions. Surface them with recommendations and wait for the user.
+- **Keep the `## ▶ Next executable step` block current** — it is the plan's resume contract (bare `/clear` + `/execute-plan <file>`). Refresh it every time an item is resolved; when only design work remains, rewrite it to say so and point at the plan to draft/refine.
 - Only commit the specific repo that was modified, never all repos. (Batch mode may still commit multiple repos — one commit per repo with changes, still using `--repo` each time.)
 - Never bypass a gate a user would reasonably want: explicit "stop and ask user" markers in the plan, destructive operations (release deletion, force-push, dropping data), or actions visible to third parties (published releases, GitHub comments).
 - If a item affects multiple repos, handle each repo with its own commit.

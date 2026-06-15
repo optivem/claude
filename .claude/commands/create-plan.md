@@ -48,6 +48,10 @@ What we get out of this — the goals and deliverables:
 - <concrete outcome 2>
 - ...
 
+## ▶ Next executable step (resume here)
+
+<The single next concrete, executable unit of work — grounded enough that a fresh agent running `/execute-plan <this file>` can act without re-deriving it: what to change, which files/commands, the gate to stop at, and what it unblocks. For a simple linear plan this just restates Step 1. For a multi-session or coordination plan it names the specific next move. If only design/planning remains (not a mechanical edit), say so explicitly and point at the plan to draft/refine — so the executor switches to `/create-plan` or `/refine-plan` instead of hunting for edits.>
+
 ## Steps
 
 - [ ] Step 1: <action>
@@ -61,6 +65,7 @@ What we get out of this — the goals and deliverables:
 
 - **`## TL;DR`** is mandatory and goes first — `/explain-plan` and `/execute-plan` key off this exact block, so populating it here means a later `/explain-plan` is a pure read.
 - **`## Outcomes`** is the user's headline ask: goals and what you walk away with, stated as results ("dark mode persists across reloads"), not tasks ("add a toggle"). This is what the user reviews first.
+- **`## ▶ Next executable step (resume here)`** is the **resume contract**: it lets the user re-enter the plan any time with just `/clear` + `/execute-plan <this file>` — no custom prompt. It always names the *single* next concrete unit, fully grounded. `/execute-plan` keeps it current (replaces it as each unit completes). Mandatory on every plan; for a trivial linear plan it can simply mirror the first open Step.
 - **`## Steps`** is the how. Keep steps coarse at creation time; the discussion sharpens them.
 - Drop **`## Open questions`** if there are none.
 
@@ -100,6 +105,7 @@ When the user signals the plan is ready, **do not commit automatically.** Ask:
 - **No code changes.** This command produces a plan file only. If the discussion surfaces work, capture it as a Step — don't implement it here. Use `/execute-plan` afterward.
 - **Outcomes first, steps second.** The file must lead with TL;DR + Outcomes. Steps live below. Don't bury the goals under a task list.
 - **TL;DR block is mandatory and exact.** Use the `## TL;DR` / **Why** / **End result** shape verbatim so the rest of the plan tooling can read it.
+- **`## ▶ Next executable step (resume here)` block is mandatory.** Every plan carries it so it can be resumed with bare `/clear` + `/execute-plan <file>`. Ground it enough to act on without re-derivation; for a trivial linear plan it may just mirror Step 1.
 - **Write the skeleton once, then `Edit`.** One `Write` to create the file; every later change is a targeted `Edit`. Never re-`Write` the whole file to make a small change.
 - **Write through settled chunks; don't batch-to-the-end.** Apply each firm decision as an `Edit` when it settles — so an interruption can't lose work — but don't thrash the file on still-fluid discussion.
 - **Don't commit without confirmation.** Phase 3 is an explicit gate. Scope the commit to the `courses` repo only.
