@@ -80,4 +80,5 @@ Only after approval:
 - **Never silently delete.** Every deletion must appear in the Phase 2 summary with its evidence, and be approved, before being removed from the file.
 - **Don't execute plan items.** This command revises the plan only; it never applies the changes the plan describes. Use `/execute-plan` for that.
 - **Preserve author decisions.** If an item has an inline author comment (`VJ:`, `AUTHOR:`, recommended-option notes), keep that annotation when revising. Do not rewrite the author's voice.
+- **Edit, never re-`Write`.** Apply the Phase 3 revisions as targeted `Edit`s to the affected lines; never re-`Write` the whole plan file for a handful of changes (`Edit` sends only the diff; a full re-`Write` resends the file — ~50× the tokens). Same plan-file write policy as `/create-plan` and `/refine-plan`.
 - **One plan file per invocation.** If the user wants to review several, run the command once per file.
