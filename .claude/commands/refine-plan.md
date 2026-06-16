@@ -1,8 +1,8 @@
-Walk a plan file item by item, discuss each item with the user, and update the plan in place based on the discussion. No code changes are made — this command refines the *plan*, not the codebase.
+Resolve a plan's **open questions** (each with a recommendation), then synthesize the resulting **target end-state** and write it as a summary at the top of the plan. No code changes are made — this command refines the *plan*, not the codebase. It does **not** walk every item.
 
 ## When to use which plan command
 
-- `/refine-plan` (this one) — you want to **talk through** each item and rewrite the plan based on the conversation. Inputs are the user's judgment, not the codebase.
+- `/refine-plan` (this one) — the plan has **open questions / unresolved decisions** you want settled. It asks you only those (each led by a recommendation), folds the answers in, then writes the resulting **target end-state** to the top of the plan. It does *not* present every item for Keep/Edit/Split.
 - `/review-plan` — you want to check the plan against the **current code state** and prune items that are done/obsolete. No discussion per item.
 - `/execute-plan` — you want to **implement** the plan. Code changes + commits.
 - `/update-plan` — batch sync the plan with decisions already made earlier in *this* conversation. No per-item walk.
@@ -26,11 +26,11 @@ ACADEMY_ROOT="$(cd "$(git rev-parse --show-toplevel)/.." && pwd)"
 
 ## Plan format expectations
 
-The plan file contains numbered or bulleted items (e.g. `## Step 1:`, `### 1.`, `- [ ] Step 1`, or similar). Parse whatever numbering/format is used. Preserve the file's existing structure (phases, headings, principle/target-state sections) — refinement edits items, not the surrounding narrative, unless the user explicitly asks.
+The plan file is free-form but typically has an H1 title, a TL;DR / Outcomes block near the top, numbered/bulleted items, and often an `## Open questions` section. Preserve the file's existing structure. Refinement touches only two things: (a) the open questions you resolve, and (b) the top-of-plan target-state summary it writes. Everything else (item bodies, phase narrative, cross-references) is left untouched unless resolving a question forces a downstream edit.
 
 ## Mark plan as picked up
 
-Before starting the walk, add a marker at the top of the plan file so anyone viewing the file can see an agent is working on it:
+Before starting, add a marker at the top of the plan file so anyone viewing it can see an agent is working on it:
 
 > 🤖 **Picked up by agent (refine)** — `<hostname>` at `<ISO-8601 UTC timestamp>`
 
@@ -38,77 +38,64 @@ Obtain the values with:
 - Hostname: `hostname`
 - Timestamp: `date -u +%Y-%m-%dT%H:%M:%SZ`
 
-Insert the marker as the first line of the file (or immediately after the H1 title, if one exists). If a previous marker is already present (from `/execute-plan` or a prior `/refine-plan` run), replace it with the new one. Remove the marker when refinement finishes.
+Insert the marker immediately after the H1 title (or as the first line if there is no title). If a previous marker is already present (from `/execute-plan` or a prior `/refine-plan` run), replace it. Remove the marker when refinement finishes.
 
-## Optional pre-pass: index
+## Phase 1: Collect open questions
 
-If the plan has more than ~10 items, before walking, present a short numbered index:
+Scan the whole plan for unresolved decisions — not just one section:
+
+- An explicit `## Open questions` (or `## Decisions to make`, `## TBD`) section.
+- Inline markers anywhere in the body: `TODO`, `TBD`, `⏳ Deferred:`, `?`-tagged design forks, and prose like "decide during", "decide before", "settle during encoding", "to be confirmed", "pending <name> confirmation", or an unresolved `VJ:` / `AUTHOR:` question.
+
+Present the collected list back to the user as a short numbered index, e.g.:
 
 ```
-The plan has 14 items. I'll walk them in order. You can say:
-  - "skip <n>" or "skip to <n>" to jump
-  - "stop" at any point to save and exit
-  - "next" to keep the current item as-is and move on
-
-Items:
-  1. <one-line title>
-  2. <one-line title>
-  ...
+Found 2 open questions in the plan:
+  1. Engine Context key names — string keys vs typed accessor
+  2. ${attempt-block} wording — single pre-rendered block vs raw placeholders
+I'll ask each one (with a recommendation), then write the target end-state to the top.
 ```
 
-For shorter plans, skip the index and go straight to item 1.
+**If there are no open questions**, say so plainly and skip straight to Phase 3 (synthesis) — the plan is already decided; all that's left is to write/refresh the target-state summary.
 
-## Phase 1: Walk
+## Phase 2: Resolve, one at a time
 
-For each item, in order:
+For each open question, in order:
 
-### Step 1 — Present
-Show the user the item **verbatim** (the actual text from the file, not a paraphrase). Include the item's number/anchor so the user knows where you are in the file. If the item references other items, surface those references too.
+1. **Present it verbatim** (the actual text from the plan) with its number, plus any inline annotation (`VJ:`, `AUTHOR:`) so the user remembers their own past notes.
+2. **Give your read and a recommendation.** One or two sentences: what the tradeoff is and which way you lean.
+3. **Ask one `AskUserQuestion`** — never batch, one per turn (standing preference; see `feedback_open_questions_one_at_a_time` in memory). Lead with your recommended answer as the **first option**, labelled with `(Recommended)` and a one-sentence rationale; offer the genuine alternative(s); always leave room for the user to dictate something else via "Edit".
+4. **Write through immediately.** Once the user decides, fold the resolution into the plan and clear the question: move it into `## Resolved decisions` (create the section if absent), and delete it from `## Open questions` / remove the inline `TODO`/`Deferred`/"decide during" marker it came from. If resolving it forces a downstream edit to an item (the item contradicts the choice), make that edit now and note it. Don't queue edits in memory — write per question so a mid-walk interruption loses nothing.
 
-### Step 2 — Offer your read
-In one or two sentences, give your own quick read of the item: what looks solid, what looks underspecified, what might conflict with other items. Don't overdo it — this is a hook for discussion, not a review.
+**Shortcut signals.** If the user says "accept your recommendations", "pick the best long-term for all", or similar mid-resolution, stop the per-question `AskUserQuestion` prompts and **batch-resolve the remaining questions** in one pass using your recommended answer for each, writing the rationale into `## Resolved decisions` (see `feedback_autonomous_best_long_term` in memory). Then go to Phase 3.
 
-### Step 3 — Ask one question
-Ask **one** open question at a time, never batched. Per the user's standing preference, sequential design walk-throughs use one `AskUserQuestion` per turn. The default options are:
+When the `## Open questions` section is emptied, remove the now-empty heading.
 
-- **Keep as-is** — no changes; move to next item
-- **Edit** — open discussion; user dictates what to change
-- **Split** — break this item into multiple items
-- **Merge** — fold this item into another (user names which)
-- **Delete** — remove this item entirely
-- **Defer** — mark with `⏳ Deferred: <reason>` and keep in the plan
-- **Skip for now** — leave untouched, return to it at the end
+## Phase 3: Synthesize and write the target end-state
 
-If the user has standing per-item annotations (`VJ:`, `AUTHOR:`, etc.), surface them in Step 2 so the user remembers their own past notes.
+This is the deliverable. Once every open question is resolved (or there were none):
 
-### Step 4 — Apply
-Once the user has decided:
+1. **Derive the target end-state** from the now-fully-resolved plan — not a restatement of the steps, but the *end behavior*: what the system does differently when the work is done, what the user will observe (concrete: prompts, output, summaries, UI), and what is explicitly **unchanged**. Ground it in the resolved decisions.
+2. **Show it to the user** in the chat response.
+3. **Write it at the top of the plan** as the canonical target-state summary:
+   - If the plan already has a top summary (`## TL;DR`, `## Outcomes`, an "End result:" line), **update that in place** so the resolved end-state is reflected there — do not create a second competing summary (duplicate top summaries are a drift source).
+   - If the plan has no top summary, **insert a new `## Target state` section** immediately after the H1 title (and after the pickup marker, which is removed at wrap-up).
+   - Keep it tight: the end logic / end outcome / what-the-user-sees / what's-unchanged. It should let a future reader understand where the plan lands without reading every step.
 
-- **Keep / Skip** → no file edit; move on.
-- **Edit / Split / Merge / Delete / Defer** → apply the edit to the plan file immediately via `Edit`. Don't queue edits in memory — write through, item by item, so a mid-walk interruption doesn't lose work.
+## Phase 4: Wrap-up
 
-Preserve the file's existing numbering scheme. If you delete or split an item and the plan uses explicit numbering (`Step 3:`, `### 3.`), renumber subsequent items at the **end** of the walk in a single pass — not mid-walk, which would confuse the user's frame of reference.
-
-### Step 5 — Confirm and advance
-Briefly confirm what changed ("Item 4: split into 4a and 4b — moving to item 5") and continue.
-
-## Phase 2: Wrap-up
-
-After the last item (or when the user says "stop"):
-
-1. If the numbering scheme requires it, renumber items in one pass and show the user the renumber diff.
-2. If any items were marked "skip for now", offer to return to them: *"3 items were skipped. Walk them now, or save and exit?"*
-3. Remove the pickup marker.
-4. Summarize what changed: items kept, edited, split, merged, deleted, deferred. One short line per outcome class.
-5. **Do not commit.** Leave the refined plan file as an uncommitted change so the user can review the diff. Mention that `/commit` or raw `git` will pick it up — and that `/refine-plan` does not run `git` itself.
+1. Remove the pickup marker.
+2. Summarize what changed: open questions resolved (one line each, with the chosen answer), and that the target-state summary at the top was written/updated.
+3. **Do not commit.** Leave the refined plan file as an uncommitted change so the user can review the diff. Mention that `/commit` or raw `git` will pick it up — and that `/refine-plan` does not run `git` itself.
+4. Offer the natural next step: `/clear` then `/execute-plan <file>`.
 
 ## Rules
 
-- **One question per turn.** Never batch. This is a sequential walk-through; the user's standing preference is one `AskUserQuestion` per turn. (See `feedback_open_questions_one_at_a_time` in memory.)
-- **No code changes.** This command refines the plan only. If the discussion surfaces something that requires a code change, note it in the plan (as a new item or an annotation) — don't fix it here. Use `/execute-plan` afterward.
-- **Write through, not batched.** Apply each item's edit to the file as soon as the user decides. Mid-walk interruptions must not lose prior decisions.
-- **Preserve author voice.** Inline author annotations (`VJ:`, `AUTHOR:`, etc.) survive unless the user explicitly rewrites them.
-- **Preserve structure.** Headings, phase sections, principle/target-state prose are not refined unless the user asks. Refinement edits items.
-- **No silent deletions.** Every deletion was explicitly chosen by the user in the walk — but still surface the list in the Phase 2 summary so it's reviewable in one place.
+- **Open questions only, then synthesize.** Do not walk every item asking Keep/Edit/Split. The job is: resolve unresolved decisions, then write the target end-state. If the user wants to rework a specific item that isn't an open question, do it — but that's on request, not the default sweep.
+- **One question per turn.** Never batch `AskUserQuestion`. Lead with a recommendation. (See `feedback_open_questions_one_at_a_time` and `feedback_flag_non_token_efficient` in memory.)
+- **No code changes.** This command refines the plan only. If resolving a question surfaces something that needs a code change, note it in the plan (new item or annotation) — don't fix it here. Use `/execute-plan` afterward.
+- **Write through, not batched.** Apply each resolution to the file as soon as the user decides. Mid-walk interruptions must not lose prior decisions.
+- **Preserve author voice and structure.** Inline annotations (`VJ:`, `AUTHOR:`) survive unless the user rewrites them. Headings, phase sections, and item bodies are not refined unless resolving a question forces it. The two sections refinement owns are the resolved open questions and the top-of-plan target-state summary.
+- **No duplicate top summaries.** Update an existing TL;DR/Outcomes rather than adding a parallel `## Target state` beside it.
 - **One plan file per invocation.** If the user wants to refine several, run the command once per file.
-- **No `/clear` advice mid-walk.** The walk is interactive and stateful; clearing mid-walk loses position. Save and exit first, then `/clear`.
+- **No `/clear` advice mid-resolution.** The resolution pass is interactive and stateful; clearing loses position. Save and exit first, then `/clear`.
