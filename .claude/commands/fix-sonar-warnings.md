@@ -102,6 +102,7 @@ When the repo has multiple SonarCloud project keys, do **not** fix all issues in
    - The deferred-plan path (see **Deferred-plan file naming** below) — one file per subagent, suffixed with the project/group so concurrent subagents don't race on the same file. Pass the exact path in; do not let the subagent invent its own name.
    - Instructions to fix, run the local build/typecheck for that project once, and **commit** for that project (using the per-project commit pattern in Phase 5). Subagents commit on their own — do not collect changes back to main.
 3. Each subagent returns a short structured summary (fixed count, deferred count, commit SHA) — the main thread aggregates these into the final report.
+4. **If two or more subagents deferred issues, write a parent umbrella plan** linking those child plans (see **Parent / child deferred plans** below) so the deferred work has a single `/execute-plan` entry point and lands as one combined commit.
 
 Subagent prompts should be self-contained: include the rule's expected fix where it's a known mechanical pattern (e.g. "`new Error(...)` → `new TypeError(...)` for S7786", "return type `: ClassName` → `: this` for S6565 on fluent builder methods that `return this`"), so the subagent doesn't need to re-fetch rule descriptions.
 
@@ -140,6 +141,20 @@ TS="$(date -u +%Y%m%d-%H%M)"                       # e.g. 20260618-0733
 ```
 
 Resolve `$TS` once at the start of the run with `date -u +%Y%m%d-%H%M` so every file from the same run shares one timestamp prefix and sorts together. Each `/fix-sonar-warnings` run gets its own timestamped file(s) — never overwrite a prior run's deferred file.
+
+### Parent / child deferred plans
+
+When a run defers issues across **two or more** project keys, after writing the per-project child plans the main thread also writes a **parent umbrella plan**:
+
+```bash
+# parent (only when ≥2 children deferred):  plans/$TS-sonar-deferred-execute-all.md
+```
+
+Contract:
+- **Child plans** own per-project detail, rationale, and resolved decisions (the *why*).
+- **Parent plan** owns the cross-project *execution*: it links every child, then consolidates their executable steps in order and ends with ONE combined verification (`compile-all.sh` + `--sample` tests) and ONE combined commit — matching the Phase 5 one-commit-per-repo rule. The parent is the `/execute-plan` entry point; since `/execute-plan` runs a single file's items and does not recurse into linked children, the parent must **inline** the steps, not just link them.
+- At fix-time the children still hold open questions, so the parent starts as a thin stub (links + the one-commit contract) and becomes fully executable once each child is run through `/refine-plan`.
+- Emit a parent only for **≥2** deferring children; a single child is already its own plan.
 
 ### Phase 5: Commit
 
@@ -185,7 +200,10 @@ SonarCloud fix run — <repo>
   Skipped:  K issues (list with reason: needs API change / human judgment / blocked on decision)
   Unclear:  J issues (list with question)
   Commits:  <sha1>, <sha2>
+  Deferred: <child plan paths>  (+ parent: plans/$TS-sonar-deferred-execute-all.md when ≥2 children)
 ```
+
+When a parent umbrella plan was written, point the user at it as the single next step: `/refine-plan` each child, then `/execute-plan plans/$TS-sonar-deferred-execute-all.md`.
 
 ## Rules
 
