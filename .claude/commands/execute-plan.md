@@ -1,5 +1,13 @@
 Execute a plan file item by item, either step-by-step (with per-item approval gates) or batch-then-review (execute everything, then one review-and-commit gate at the end).
 
+## Always surface a recommended answer (applies to every question)
+
+**Whenever you ask the user a question in this command — mode choice, scope choice, an approval gate, a clarification, anything — always show which option you recommend and one sentence of why.** Never present a neutral menu and make the user choose blind.
+
+- When using the `AskUserQuestion` tool, make the recommended option the **first** in the list and append `(Recommended)` to its label.
+- When asking inline (plain prose), lead with the recommendation: *"I'd go with X because <reason> — or do you want Y?"*
+- If the user just says "what do you recommend" / "go with your recommendation" / "you decide", take that as approval of your stated recommendation and proceed; don't re-ask.
+
 ## Input
 
 The plan file is provided as `$ARGUMENTS`. If no argument is given, use the currently open file in the editor (from the IDE selection context). If no file is open either, ask the user which plan file to execute.
