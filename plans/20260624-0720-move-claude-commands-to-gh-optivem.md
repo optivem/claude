@@ -18,11 +18,10 @@
 
 ## ▶ Next executable step (resume here)
 
-Step 5: Delete `.claude/settings.json` from all workspace repos (actions, claude, courses, gh-optivem, github-utils, hub, etc.) — step-by-step, one repo at a time with per-step approval.
+Step 6: Remove `scripts/sync-claude-settings.js`, `scripts/sync-all-claude-settings.sh`, `.claude/commands/`, and `.claude/settings.json` from `optivem/claude`; remove `sync-claude` and `claude-sync-settings` skills.
 
 ## Steps
 
-- [ ] Step 5: Delete `.claude/settings.json` from all workspace repos (actions, claude, courses, gh-optivem, github-utils, hub, etc.) — global settings replace them
 - [ ] Step 6: Remove `scripts/sync-claude-settings.js`, `scripts/sync-all-claude-settings.sh`, `.claude/commands/`, and `.claude/settings.json` from `optivem/claude`; remove `sync-claude` and `claude-sync-settings` skills
 - [ ] Step 7: Move `docs/` from `optivem/claude` to `gh-optivem/docs/claude/`; embed `CLAUDE.md` into `gh-optivem` source (used by `configure`) then delete it from `optivem/claude`
 - [ ] Step 8: Remove `optivem/claude` from `academy.code-workspace` and archive the GitHub repo
