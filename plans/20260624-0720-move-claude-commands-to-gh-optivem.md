@@ -16,16 +16,10 @@
 
 ## ▶ Next executable step (resume here)
 
-Resolve the open questions below, then begin Step 1: embed the 13 command files into `gh-optivem` using `go:embed` and add the `gh optivem claude install`, `configure`, and `setup` subcommands.
+Step 5: Delete `.claude/settings.json` from all workspace repos (actions, claude, courses, gh-optivem, github-utils, hub, etc.) — step-by-step, one repo at a time with per-step approval.
 
 ## Steps
 
-- [ ] Step 1: Add `claude/commands/` directory to `gh-optivem`, copy the 13 `.md` files from `optivem/claude/.claude/commands/`, and embed them with `go:embed`
-- [ ] Step 2: Add `gh optivem claude install` subcommand — writes embedded command files to `~/.claude/commands/` (skip-if-same, overwrite-if-different, print changed files)
-- [ ] Step 3: Add `gh optivem claude configure` subcommand — merges two things into global Claude config, both non-destructively:
-  - `settings.json` → `~/.claude/settings.json`: union `permissions.allow` lists, merge hooks additively, never delete user's own entries
-  - `CLAUDE.md` rules → `~/.claude/CLAUDE.md`: append sections not already present, never overwrite existing content
-- [ ] Step 4: Add `gh optivem claude setup` convenience subcommand — runs `install` then `configure`
 - [ ] Step 5: Delete `.claude/settings.json` from all workspace repos (actions, claude, courses, gh-optivem, github-utils, hub, etc.) — global settings replace them
 - [ ] Step 6: Remove `scripts/sync-claude-settings.js`, `scripts/sync-all-claude-settings.sh`, `.claude/commands/`, and `.claude/settings.json` from `optivem/claude`; remove `sync-claude` and `claude-sync-settings` skills
 - [ ] Step 7: Move `docs/` from `optivem/claude` to `gh-optivem/docs/claude/`; embed `CLAUDE.md` into `gh-optivem` source (used by `configure`) then delete it from `optivem/claude`
