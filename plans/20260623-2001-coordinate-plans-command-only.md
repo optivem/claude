@@ -1,5 +1,7 @@
 # 2026-06-23 20:01 UTC — Fold `plan-coordinator` into the `coordinate-plans` command (delete the agent)
 
+🤖 **Picked up by agent** — `Valentina_Desk` at `2026-06-24T06:42:54Z`
+
 ## TL;DR
 
 **Why:** `/coordinate-plans` spawns a `plan-coordinator` subagent, but the agent
@@ -43,25 +45,15 @@ command.
 
 ## ▶ Next executable step (resume here)
 
-**Step 1 — Rewrite `coordinate-plans.md` to be self-contained.** Open
-`.claude/commands/coordinate-plans.md` and `.claude/agents/plan-coordinator.md`
-side by side. Merge the agent's Workflow / Per-plan extraction / Dependency signals /
-Conflict detection / Consolidation candidates / Execution waves / Meta-plan output
-format / Rules sections into the command, rewriting second-person "you (the agent)"
-into instructions for Claude running the command in the main session. Replace the
-"What to do → spawn `plan-coordinator`" section with "do the analysis inline and Write
-the meta-plan yourself." Keep the existing Input contract + resolution/validation
-sections unchanged.
+**Step 3 — Sync + verify distribution.** Run the sync-all-claude-settings script to
+redistribute the updated `coordinate-plans.md` to `~/.claude/commands/`. Then confirm
+the global copy reflects the new inline body (no "spawn the agent" language) and that no
+orphaned `plan-coordinator.md` lingers under `~/.claude/agents/`. This step runs a script
+— ask the user before running it. After Step 3, smoke-test (Step 4) from a repo with
+plans.
 
 ## Steps
 
-- [ ] **Step 1 — Rewrite the command to inline the workflow.** Fold the agent body into
-  `coordinate-plans.md` (see Next executable step). Preserve the meta-plan output-format
-  block verbatim — it is the output contract. Add the optional "delegate reads to a
-  general-purpose subagent for large sets" escape hatch, default inline.
-- [ ] **Step 2 — Delete the agent.** `git rm .claude/agents/plan-coordinator.md`.
-  Grep the repo for any other reference to `plan-coordinator` (docs, README, other
-  commands) and update/remove each.
 - [ ] **Step 3 — Sync + verify distribution.** Run `claude sync` (the
   sync-all-claude-settings script). Confirm `~/.claude/commands/coordinate-plans.md`
   reflects the new body and that no orphaned `plan-coordinator.md` lingers under
