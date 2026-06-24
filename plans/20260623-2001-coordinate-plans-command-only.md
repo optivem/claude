@@ -1,7 +1,5 @@
 # 2026-06-23 20:01 UTC — Fold `plan-coordinator` into the `coordinate-plans` command (delete the agent)
 
-🤖 **Picked up by agent** — `Valentina_Desk` at `2026-06-24T06:42:54Z`
-
 ## TL;DR
 
 **Why:** `/coordinate-plans` spawns a `plan-coordinator` subagent, but the agent
@@ -45,19 +43,16 @@ command.
 
 ## ▶ Next executable step (resume here)
 
-**Step 3 — Sync + verify distribution.** Run the sync-all-claude-settings script to
-redistribute the updated `coordinate-plans.md` to `~/.claude/commands/`. Then confirm
-the global copy reflects the new inline body (no "spawn the agent" language) and that no
-orphaned `plan-coordinator.md` lingers under `~/.claude/agents/`. This step runs a script
-— ask the user before running it. After Step 3, smoke-test (Step 4) from a repo with
-plans.
+**Step 4 — Smoke-test (user-driven).** From a repo with multiple plans (e.g. `shop`),
+run `/coordinate-plans <first> <last>` over a small range and confirm it writes a
+meta-plan with **no `Agent type ... not found` error** and the same section structure as
+before. This is an interactive, visible run best done by the user; the `claude` repo has
+only one plan, so it can't exercise a multi-plan range here. Steps 1–3 are done and the
+agent-spawn code path is fully removed + global copy verified, so this is a final
+confirmation, not a blocker.
 
 ## Steps
 
-- [ ] **Step 3 — Sync + verify distribution.** Run `claude sync` (the
-  sync-all-claude-settings script). Confirm `~/.claude/commands/coordinate-plans.md`
-  reflects the new body and that no orphaned `plan-coordinator.md` lingers under
-  `~/.claude/agents/`.
 - [ ] **Step 4 — Smoke-test.** From a repo with plans (e.g. `shop`), run
   `/coordinate-plans <first> <last>` over a small range and confirm it writes a
   meta-plan with no `Agent type ... not found` error and the same section structure as
