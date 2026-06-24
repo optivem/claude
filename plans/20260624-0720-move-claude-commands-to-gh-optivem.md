@@ -1,9 +1,10 @@
 # 2026-06-24 07:20:00 UTC — Move Claude commands into gh-optivem for global install
 
+
 ## TL;DR
 
 **Why:** Claude slash commands currently live in `optivem/claude`, a repo that exists solely to distribute them. Anyone who wants the commands must know to clone or sync that repo separately — there is no self-contained install story.
-**End result:** The 13 slash commands, `settings.json`, and `CLAUDE.md` rules all ship inside `optivem/gh-optivem`. `gh optivem claude install` copies commands to `~/.claude/commands/`; `gh optivem claude configure` merges settings and CLAUDE.md rules into `~/.claude/` non-destructively; `gh optivem claude setup` runs both. Per-repo `.claude/settings.json` copies are deleted. The `optivem/claude` repo is archived and removed from the workspace.
+**End result:** The 13 slash commands, `settings.json`, and `CLAUDE.md` rules are embedded via `go:embed` inside `optivem/gh-optivem`. `gh optivem claude install` copies commands to `~/.claude/commands/`; `gh optivem claude configure` merges settings and CLAUDE.md rules into `~/.claude/` non-destructively (never deletes user's own entries); `gh optivem claude setup` runs both. Per-repo `.claude/settings.json` files are deleted across all workspace repos. The `optivem/claude` GitHub repo is archived and removed from the workspace.
 
 ## Outcomes
 
@@ -31,7 +32,7 @@ Resolve the open questions below, then begin Step 1: embed the 13 command files 
 - [ ] Step 8: Remove `optivem/claude` from `academy.code-workspace` and archive the GitHub repo
 - [ ] Step 9: Update README in `gh-optivem` with install + setup instructions (`gh optivem claude install`, `gh optivem claude configure`, `gh optivem claude setup`)
 
-## Open questions
+## Resolved decisions
 
-- **Embedding strategy:** Use `go:embed` (commands + CLAUDE.md baked into the binary — simple, versioned with the binary) vs loose files in the repo (easier to read/diff on GitHub, no recompile to update)? Recommended: `go:embed` — keeps install self-contained with no external file paths.
-- **Archive vs delete:** Archive the `optivem/claude` GitHub repo (keeps history accessible) or delete it entirely? Recommended: archive.
+- **Embedding strategy:** `go:embed` — bake command files and CLAUDE.md into the binary at compile time. Self-contained install, no external path assumptions.
+- **Archive vs delete:** Archive the `optivem/claude` GitHub repo — keeps history accessible, marks it read-only.
