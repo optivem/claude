@@ -18,11 +18,10 @@
 
 ## ▶ Next executable step (resume here)
 
-Step 6: Remove `scripts/sync-claude-settings.js`, `scripts/sync-all-claude-settings.sh`, `.claude/commands/`, and `.claude/settings.json` from `optivem/claude`; remove `sync-claude` and `claude-sync-settings` skills.
+Step 7: Move `docs/` from `optivem/claude` to `gh-optivem/docs/claude/`; embed `CLAUDE.md` into `gh-optivem` source (used by `configure`) then delete it from `optivem/claude`.
 
 ## Steps
 
-- [ ] Step 6: Remove `scripts/sync-claude-settings.js`, `scripts/sync-all-claude-settings.sh`, `.claude/commands/`, and `.claude/settings.json` from `optivem/claude`; remove `sync-claude` and `claude-sync-settings` skills
 - [ ] Step 7: Move `docs/` from `optivem/claude` to `gh-optivem/docs/claude/`; embed `CLAUDE.md` into `gh-optivem` source (used by `configure`) then delete it from `optivem/claude`
 - [ ] Step 8: Remove `optivem/claude` from `academy.code-workspace` and archive the GitHub repo
 - [ ] Step 9: Update README in `gh-optivem` with install + setup instructions (`gh optivem claude install`, `gh optivem claude configure`, `gh optivem claude setup`)
